@@ -1,0 +1,88 @@
+
+# Please enter the commit message for your changes. Lines starting
+# with '#' will be ignored, and an empty message aborts the commit.
+#
+# On branch main
+# Your branch is up to date with 'origin/main'.
+#
+# Changes to be committed:
+#	modified:   .gitignore
+#	modified:   cairo_assistant/__init__.py
+#	modified:   cairo_assistant/assistant_core.py
+#	modified:   cairo_assistant/audio_utils.py
+#	modified:   cairo_assistant/model_manager.py
+#	modified:   cairo_assistant/model_setup.py
+#	modified:   cairo_assistant/model_setup_.py
+#	modified:   cairo_assistant/run_voice_assistant.py
+#	modified:   cairo_real_route.html
+#	modified:   data/Metro_gtfs/agency.txt
+#	modified:   data/Metro_gtfs/calendar.txt
+#	modified:   data/Metro_gtfs/fare_attributes.txt
+#	modified:   data/Metro_gtfs/fare_rules.txt
+#	modified:   data/Metro_gtfs/feed_info.txt
+#	modified:   data/Metro_gtfs/frequencies.txt
+#	modified:   data/Metro_gtfs/routes.txt
+#	modified:   data/Metro_gtfs/shapes.txt
+#	modified:   data/Metro_gtfs/stop_times.txt
+#	modified:   data/Metro_gtfs/stops.txt
+#	modified:   data/Metro_gtfs/trips.txt
+#	modified:   data/public_gtfs/agency.txt
+#	modified:   data/public_gtfs/calendar.txt
+#	modified:   data/public_gtfs/feed_info.txt
+#	modified:   data/public_gtfs/frequencies.txt
+#	modified:   data/public_gtfs/routes.txt
+#	modified:   data/public_gtfs/shapes.txt
+#	modified:   data/public_gtfs/stop_times.txt
+#	modified:   data/public_gtfs/stops.txt
+#	modified:   data/public_gtfs/translations.txt
+#	modified:   data/public_gtfs/trips.txt
+#	modified:   data/translations.txt
+#	modified:   dialogue_manager.py
+#	modified:   location.html
+#	modified:   main.py
+#	modified:   main_.py
+#	modified:   network_builder/GTFS_preprocessing.py
+#	modified:   network_builder/__init__.py
+#	modified:   network_builder/build_and_save_network.py
+#	modified:   network_builder/network_preprocessing.py
+#	modified:   raptor/algorithm.py
+#	modified:   raptor/config.py
+#	modified:   raptor/output_translation.py
+#	modified:   raptor/services/__init__.py
+#	modified:   raptor/services/geo_utils.py
+#	modified:   raptor/services/map_visualizer.py
+#	modified:   raptor/services/raptor_service.py
+#	modified:   raptor/services/stop_matcher.py
+#	modified:   raptor/utils.py
+#	modified:   server.py
+#	modified:   shared/__init__.py
+#	modified:   shared/arabic_text.py
+#
+# Changes not staged for commit:
+#	modified:   cairo_assistant/assistant_core.py
+#	modified:   cairo_assistant/model_setup.py
+#	modified:   cairo_assistant/model_setup_.py
+#	deleted:    cairo_real_route.html
+#	modified:   chat.html
+#	modified:   dialogue_manager.py
+#	deleted:    location.html
+#	modified:   main.py
+#	deleted:    main_.py
+#	modified:   raptor/output_translation.py
+#	modified:   raptor/services/raptor_service.py
+#	modified:   raptor/services/stop_matcher.py
+#	modified:   raptor/utils.py
+#	deleted:    server.py
+#	modified:   states.py
+#
+# Untracked files:
+#	api/
+#	data/Metro_gtfs.zip
+#	data/Metro_gtfs/translations.txt
+#	data/public_gtfs.zip
+#	map.html
+#	onboarding.html
+#	recommender/
+#	requirements.txt
+#	sql/
+#

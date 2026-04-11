@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NaviTour - Onboarding</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0a0e1a;--panel:#111827;--border:#1e2d45;
+  --accent:#f5a623;--teal:#00d4aa;--red:#e94560;--text:#e8eaf0;--muted:#64748b;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{
+  font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;
+  display:flex;flex-direction:column;align-items:center;
+}
+.progress-wrap{
+  width:100%;background:var(--panel);border-bottom:1px solid var(--border);padding:14px 24px;
+  display:flex;align-items:center;gap:16px;position:sticky;top:0;z-index:100;
+}
+.logo{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:3px;color:var(--accent);white-space:nowrap;}
+.logo span{color:var(--teal);}
+.steps{display:flex;gap:6px;flex:1;justify-content:center;}
+.step{height:4px;border-radius:2px;flex:1;max-width:80px;background:var(--border);transition:background .3s;}
+.step.done{background:var(--accent);}
+.step.active{background:var(--teal);}
+.step-label{font-size:11px;color:var(--muted);white-space:nowrap;}
+.page{width:100%;max-width:760px;padding:36px 24px 60px;display:none;flex-direction:column;align-items:center;}
+.page.active{display:flex;}
+.hero-icon{font-size:72px;margin-bottom:16px;}
+.hero-title{font-family:'Bebas Neue',sans-serif;font-size:52px;letter-spacing:4px;text-align:center;line-height:1;}
+.hero-title span{color:var(--teal);}
+.hero-sub{font-size:15px;color:var(--muted);text-align:center;margin:12px 0 32px;max-width:470px;line-height:1.7;}
+.hero-features{display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%;margin-bottom:30px;}
+.feat{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:16px;display:flex;align-items:flex-start;gap:12px;}
+.feat-icon{font-size:28px;}
+.feat-title{font-size:13px;font-weight:700;margin-bottom:2px;}
+.feat-desc{font-size:11px;color:var(--muted);line-height:1.5;}
+.sec-icon{font-size:48px;margin-bottom:8px;}
+.sec-title{font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:2px;text-align:center;color:var(--accent);}
+.sec-sub{font-size:13px;color:var(--muted);text-align:center;margin:6px 0 24px;line-height:1.6;max-width:480px;}
+.form-wrap{width:100%;max-width:380px;}
+.field-label{font-size:11px;font-weight:700;letter-spacing:1.3px;text-transform:uppercase;color:var(--muted);margin-bottom:6px;}
+.input-wrap{position:relative;margin-bottom:14px;}
+.text-input{
+  width:100%;background:var(--panel);border:2px solid var(--border);border-radius:12px;padding:14px 16px;
+  color:var(--text);font-family:'Cairo',sans-serif;font-size:15px;font-weight:600;outline:none;transition:border-color .2s;
+}
+.text-input.password{padding-right:48px;}
+.text-input:focus{border-color:var(--teal);}
+.text-input::placeholder{color:var(--muted);font-weight:400;}
+.pass-toggle{
+  position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;
+  color:var(--muted);font-size:16px;cursor:pointer;
+}
+.chip-grid{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;width:100%;}
+.chip{
+  display:flex;align-items:center;gap:7px;padding:10px 16px;border-radius:50px;border:1.5px solid var(--border);
+  background:var(--panel);color:var(--text);font-size:13px;font-weight:600;cursor:pointer;transition:all .18s;user-select:none;
+}
+.chip:hover{border-color:var(--accent);background:rgba(245,166,35,.06);}
+.chip.sel{border-color:var(--accent);background:rgba(245,166,35,.12);color:var(--accent);}
+.chip.sel-teal{border-color:var(--teal);background:rgba(0,212,170,.1);color:var(--teal);}
+.radius-display{font-family:'Bebas Neue',sans-serif;font-size:64px;color:var(--accent);line-height:1;margin:8px 0 4px;}
+.radius-unit{font-size:18px;color:var(--muted);}
+.radius-desc{font-size:12px;color:var(--muted);margin-bottom:24px;text-align:center;}
+.radius-slider{width:100%;max-width:440px;accent-color:var(--accent);cursor:pointer;height:6px;margin-bottom:12px;}
+.radius-marks{display:flex;justify-content:space-between;width:100%;max-width:440px;font-size:10px;color:var(--muted);margin-bottom:24px;}
+.summary-card{background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:24px;width:100%;margin-bottom:16px;}
+.sum-row{display:flex;align-items:flex-start;gap:14px;padding:10px 0;border-bottom:1px solid var(--border);}
+.sum-row:last-child{border-bottom:none;}
+.sum-icon{font-size:22px;flex-shrink:0;margin-top:1px;}
+.sum-label{font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);font-weight:700;margin-bottom:4px;}
+.sum-val{font-size:13px;font-weight:600;color:var(--text);line-height:1.5;}
+.sum-chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:4px;}
+.sum-chip{background:rgba(245,166,35,.1);border:1px solid rgba(245,166,35,.25);border-radius:20px;padding:3px 10px;font-size:11px;color:var(--accent);}
+.sum-chip.teal{background:rgba(0,212,170,.1);border-color:rgba(0,212,170,.25);color:var(--teal);}
+.btn-row{display:flex;gap:12px;width:100%;max-width:420px;margin-top:8px;}
+.btn{
+  flex:1;padding:14px;border-radius:12px;border:none;font-family:'Cairo',sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:all .2s;letter-spacing:.4px;
+}
+.btn-primary{background:var(--accent);color:#0a0e1a;}
+.btn-primary:hover:not(:disabled){background:#ffc04d;transform:translateY(-1px);}
+.btn-primary:disabled{opacity:.45;cursor:not-allowed;transform:none;}
+.btn-back{background:transparent;border:1.5px solid var(--border);color:var(--muted);}
+.btn-back:hover{border-color:var(--text);color:var(--text);}
+.btn-start{background:linear-gradient(135deg,var(--accent),#ff8c00);color:#0a0e1a;font-size:16px;padding:16px;}
+.hint{font-size:11px;color:var(--muted);margin-top:8px;text-align:center;}
+.val-hint{font-size:11px;color:var(--red);margin-top:8px;display:none;text-align:center;}
+.val-hint.show{display:block;}
+.status{font-size:12px;min-height:18px;text-align:center;margin-top:10px;}
+.status.err{color:var(--red);}
+.status.ok{color:var(--teal);}
+.switch-link{font-size:12px;color:var(--muted);margin-top:14px;text-align:center;}
+.switch-link button{background:none;border:none;color:var(--teal);cursor:pointer;font:inherit;text-decoration:underline;}
+@media (max-width:700px){
+  .hero-features{grid-template-columns:1fr;}
+  .hero-title{font-size:42px;}
+  .btn-row{flex-direction:column;}
+}
+</style>
+</head>
+<body>
+<div class="progress-wrap">
+  <div class="logo">Navi<span>Tour</span></div>
+  <div class="steps">
+    <div class="step active" id="step0"></div>
+    <div class="step" id="step1"></div>
+    <div class="step" id="step2"></div>
+    <div class="step" id="step3"></div>
+    <div class="step" id="step4"></div>
+  </div>
+  <div class="step-label" id="stepLabel">Welcome</div>
+</div>
+
+<div class="page active" id="page0">
+  <div class="hero-icon">🗺️</div>
+  <h1 class="hero-title">Cairo <span>Explorer</span></h1>
+  <p class="hero-sub">Create your account once, tell NaviTour what you like, and we will send your preferences straight to the recommendation system before you reach the map.</p>
+  <div class="hero-features">
+    <div class="feat"><div class="feat-icon">🔐</div><div><div class="feat-title">Sign In Or Register</div><div class="feat-desc">Your name and password identify you and keep your profile connected to your ratings.</div></div></div>
+    <div class="feat"><div class="feat-icon">🍽️</div><div><div class="feat-title">Food Preferences</div><div class="feat-desc">Choose cuisines you love so restaurant recommendations start personalized.</div></div></div>
+    <div class="feat"><div class="feat-icon">🏛️</div><div><div class="feat-title">Place Preferences</div><div class="feat-desc">Pick place types you enjoy to seed stronger recommendations from the beginning.</div></div></div>
+    <div class="feat"><div class="feat-icon">📍</div><div><div class="feat-title">Ready For The Map</div><div class="feat-desc">After setup, your profile is saved locally and the main map opens with your user ID.</div></div></div>
+  </div>
+  <div class="btn-row" style="max-width:280px">
+    <button class="btn btn-primary" onclick="go(1)">Get Started →</button>
+  </div>
+</div>
+
+<div class="page" id="page1">
+  <div class="sec-icon">👤</div>
+  <div class="sec-title" id="authTitle">Sign In</div>
+  <p class="sec-sub" id="authSub">Use your name and password. If the name does not exist yet, NaviTour will create the account for you.</p>
+  <div class="form-wrap">
+    <div class="field-label">Your Name</div>
+    <div class="input-wrap">
+      <input class="text-input" id="nameInput" type="text" placeholder="e.g. Omar, Sara, Ahmed..." maxlength="40" autocomplete="off">
+    </div>
+    <div class="field-label">Password</div>
+    <div class="input-wrap">
+      <input class="text-input password" id="passwordInput" type="password" placeholder="Enter your password..." maxlength="60" autocomplete="off">
+      <button class="pass-toggle" type="button" onclick="togglePassword()" id="passEye">👁</button>
+    </div>
+  </div>
+  <div class="val-hint" id="authHint">Please enter both your name and password.</div>
+  <div class="status" id="authStatus"></div>
+  <div class="btn-row">
+    <button class="btn btn-back" onclick="go(0)">← Back</button>
+    <button class="btn btn-primary" id="authBtn" onclick="submitAuth()">Continue →</button>
+  </div>
+  <div class="switch-link">Want a clean start? <button type="button" onclick="resetSavedProfile()">Clear saved local profile</button></div>
+</div>
+
+<div class="page" id="page2">
+  <div class="sec-icon">🍽️</div>
+  <div class="sec-title">Food Preferences</div>
+  <p class="sec-sub">Pick the cuisines you enjoy. These will be stored as seed preferences for your recommendation profile.</p>
+  <div class="chip-grid" id="cuisineGrid"></div>
+  <div class="hint">You can choose as many as you want, or skip this step.</div>
+  <div class="btn-row" style="margin-top:24px">
+    <button class="btn btn-back" onclick="go(1)">← Back</button>
+    <button class="btn btn-primary" onclick="go(3)">Next →</button>
+  </div>
+</div>
+
+<div class="page" id="page3">
+  <div class="sec-icon">🏛️</div>
+  <div class="sec-title">Place Preferences</div>
+  <p class="sec-sub">Choose the types of places you like so the map can start with better ranking signals.</p>
+  <div class="chip-grid" id="placeGrid"></div>
+  <div class="hint">You can skip this too, but choosing a few options will improve the first recommendations.</div>
+  <div class="btn-row" style="margin-top:24px">
+    <button class="btn btn-back" onclick="go(2)">← Back</button>
+    <button class="btn btn-primary" onclick="go(4)">Next →</button>
+  </div>
+</div>
+
+<div class="page" id="page4">
+  <div class="sec-icon">📡</div>
+  <div class="sec-title">Finish Setup</div>
+  <p class="sec-sub">Set your preferred radius, review your profile, then save everything before entering the map.</p>
+  <div class="radius-display"><span id="rNum">1000</span><span class="radius-unit">m</span></div>
+  <div class="radius-desc" id="rDesc">About a 12-minute walk</div>
+  <input type="range" class="radius-slider" id="radiusSlider" min="200" max="3000" step="100" value="1000" oninput="updateRadius(this.value)">
+  <div class="radius-marks"><span>200m</span><span>1km</span><span>2km</span><span>3km</span></div>
+
+  <div class="summary-card">
+    <div class="sum-row">
+      <div class="sum-icon">👤</div>
+      <div><div class="sum-label">Account</div><div class="sum-val" id="sumName">—</div></div>
+    </div>
+    <div class="sum-row">
+      <div class="sum-icon">🍽️</div>
+      <div><div class="sum-label">Favourite Cuisines</div><div class="sum-chips" id="sumCuisines"></div></div>
+    </div>
+    <div class="sum-row">
+      <div class="sum-icon">🏛️</div>
+      <div><div class="sum-label">Favourite Places</div><div class="sum-chips" id="sumPlaces"></div></div>
+    </div>
+    <div class="sum-row">
+      <div class="sum-icon">📏</div>
+      <div><div class="sum-label">Default Radius</div><div class="sum-val" id="sumRadius">1000m</div></div>
+    </div>
+  </div>
+
+  <div class="status" id="saveStatus"></div>
+  <div class="btn-row">
+    <button class="btn btn-back" onclick="go(3)">← Back</button>
+    <button class="btn btn-start" id="saveBtn" onclick="finishOnboarding()">Save And Open Map →</button>
+  </div>
+</div>
+
+<script>
+const API = 'http://localhost:8000';
+const STEP_LABELS = ['Welcome','Sign In','Food Preferences','Place Preferences','Finish Setup'];
+
+const CUISINES = [
+  {id:'egyptian',emoji:'🫓',label:'Egyptian'},
+  {id:'arabic',emoji:'🥙',label:'Arabic'},
+  {id:'lebanese',emoji:'🌿',label:'Lebanese'},
+  {id:'turkish',emoji:'🥗',label:'Turkish'},
+  {id:'syrian',emoji:'🫕',label:'Syrian'},
+  {id:'yemeni',emoji:'🍲',label:'Yemeni'},
+  {id:'oriental',emoji:'🥢',label:'Oriental'},
+  {id:'italian',emoji:'🍝',label:'Italian'},
+  {id:'pizza',emoji:'🍕',label:'Pizza'},
+  {id:'french',emoji:'🥐',label:'French'},
+  {id:'greek',emoji:'🫒',label:'Greek'},
+  {id:'mediterranean',emoji:'🐟',label:'Mediterranean'},
+  {id:'american',emoji:'🍔',label:'American'},
+  {id:'burger',emoji:'🍔',label:'Burgers'},
+  {id:'chicken',emoji:'🍗',label:'Chicken'},
+  {id:'fastfood',emoji:'🍟',label:'Fast Food'},
+  {id:'kebab',emoji:'🥩',label:'Kebab & Grill'},
+  {id:'seafood',emoji:'🦐',label:'Seafood'},
+  {id:'sushi',emoji:'🍣',label:'Sushi'},
+  {id:'japanese',emoji:'🍜',label:'Japanese'},
+  {id:'chinese',emoji:'🥡',label:'Chinese'},
+  {id:'indian',emoji:'🍛',label:'Indian'},
+  {id:'asian',emoji:'🍱',label:'Asian'},
+  {id:'korean',emoji:'🍙',label:'Korean'},
+  {id:'mexican',emoji:'🌮',label:'Mexican'},
+  {id:'steak',emoji:'🥩',label:'Steak'},
+  {id:'coffee_shop',emoji:'☕',label:'Café & Coffee'},
+  {id:'dessert',emoji:'🍰',label:'Desserts'},
+  {id:'ice_cream',emoji:'🍦',label:'Ice Cream'},
+  {id:'vegan',emoji:'🥬',label:'Vegan'},
+  {id:'breakfast',emoji:'🍳',label:'Breakfast'},
+  {id:'sandwich',emoji:'🥪',label:'Sandwiches'}
+];
+
+const PLACES = [
+  {id:'museum',emoji:'🏛️',label:'Museums'},
+  {id:'attraction',emoji:'✨',label:'Attractions'},
+  {id:'monument',emoji:'🗿',label:'Monuments'},
+  {id:'memorial',emoji:'🏅',label:'Memorials'},
+  {id:'archaeological_site',emoji:'⛏️',label:'Archaeology'},
+  {id:'ruins',emoji:'🏚️',label:'Ancient Ruins'},
+  {id:'castle',emoji:'🏰',label:'Castles'},
+  {id:'viewpoint',emoji:'🌅',label:'Viewpoints'},
+  {id:'park',emoji:'🌳',label:'Parks'},
+  {id:'garden',emoji:'🌸',label:'Gardens'},
+  {id:'cinema',emoji:'🎬',label:'Cinema'},
+  {id:'theatre',emoji:'🎭',label:'Theatre'},
+  {id:'gallery',emoji:'🖼️',label:'Art Galleries'},
+  {id:'arts_centre',emoji:'🎨',label:'Arts Centres'},
+  {id:'sports_centre',emoji:'⚽',label:'Sports'},
+  {id:'theme_park',emoji:'🎡',label:'Theme Parks'},
+  {id:'mosque',emoji:'🕌',label:'Mosques'}
+];
+
+let currentPage = 0;
+let state = {
+  name: '',
+  password: '',
+  user_id: null,
+  is_new: true,
+  cuisines: new Set(),
+  places: new Set(),
+  radius: 1000
+};
+
+function buildGrid(containerId, items, stateKey, colorClass) {
+  const el = document.getElementById(containerId);
+  el.innerHTML = items.map(item => `
+    <div class="chip ${state[stateKey].has(item.id) ? colorClass : ''}" id="chip_${stateKey}_${item.id}"
+      onclick="toggleChip('${stateKey}','${item.id}','${colorClass}')">
+      <span>${item.emoji}</span>${item.label}
+    </div>
+  `).join('');
+}
+
+function toggleChip(key, id, colorClass) {
+  if (state[key].has(id)) state[key].delete(id);
+  else state[key].add(id);
+  document.getElementById(`chip_${key}_${id}`).className = `chip ${state[key].has(id) ? colorClass : ''}`;
+}
+
+function togglePassword() {
+  const input = document.getElementById('passwordInput');
+  const eye = document.getElementById('passEye');
+  input.type = input.type === 'password' ? 'text' : 'password';
+  eye.textContent = input.type === 'password' ? '👁' : '🙈';
+}
+
+function updateProgress(page) {
+  for (let i = 0; i < 5; i++) {
+    const step = document.getElementById(`step${i}`);
+    step.className = i < page ? 'step done' : i === page ? 'step active' : 'step';
+  }
+  document.getElementById('stepLabel').textContent = STEP_LABELS[page];
+}
+
+function updateSummary() {
+  document.getElementById('sumName').textContent = `${state.name} ${state.user_id ? `(#${state.user_id})` : ''}`.trim();
+  document.getElementById('sumRadius').textContent = `${state.radius}m`;
+  document.getElementById('sumCuisines').innerHTML = renderSummaryChips([...state.cuisines], CUISINES, '');
+  document.getElementById('sumPlaces').innerHTML = renderSummaryChips([...state.places], PLACES, ' teal');
+}
+
+function renderSummaryChips(ids, source, extraClass) {
+  if (!ids.length) return '<span style="color:var(--muted);font-size:12px">None selected</span>';
+  return ids.map(id => {
+    const item = source.find(entry => entry.id === id);
+    return `<div class="sum-chip${extraClass}">${item ? `${item.emoji} ${item.label}` : id}</div>`;
+  }).join('');
+}
+
+function updateRadius(value) {
+  state.radius = parseInt(value, 10);
+  document.getElementById('radiusSlider').value = value;
+  document.getElementById('rNum').textContent = value;
+  document.getElementById('sumRadius').textContent = `${value}m`;
+  const descs = {200:'2 min walk',300:'4 min walk',500:'6 min walk',700:'9 min walk',1000:'12 min walk',1500:'18 min walk',2000:'25 min walk',2500:'30 min walk',3000:'best by car'};
+  const nearest = Object.keys(descs).reduce((best, current) => Math.abs(current - value) < Math.abs(best - value) ? current : best);
+  document.getElementById('rDesc').textContent = `About ${descs[nearest]}`;
+}
+
+function go(page) {
+  if (page === 4) updateSummary();
+  document.getElementById(`page${currentPage}`).classList.remove('active');
+  currentPage = page;
+  document.getElementById(`page${currentPage}`).classList.add('active');
+  updateProgress(currentPage);
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+function profilePayload() {
+  return {
+    user_id: state.user_id,
+    name: state.name,
+    cuisines: [...state.cuisines],
+    places: [...state.places],
+    radius: state.radius,
+    is_new: state.is_new,
+    createdAt: new Date().toISOString()
+  };
+}
+
+function saveProfileLocally() {
+  localStorage.setItem('navitour_profile', JSON.stringify(profilePayload()));
+}
+
+function resetSavedProfile() {
+  localStorage.removeItem('navitour_profile');
+  state.user_id = null;
+  state.name = '';
+  state.password = '';
+  state.is_new = true;
+  document.getElementById('nameInput').value = '';
+  document.getElementById('passwordInput').value = '';
+  document.getElementById('authStatus').textContent = 'Saved local profile cleared.';
+  document.getElementById('authStatus').className = 'status ok';
+}
+
+async function submitAuth() {
+  const name = document.getElementById('nameInput').value.trim();
+  const password = document.getElementById('passwordInput').value;
+  const hint = document.getElementById('authHint');
+  const status = document.getElementById('authStatus');
+  const btn = document.getElementById('authBtn');
+
+  if (!name || !password) {
+    hint.classList.add('show');
+    return;
+  }
+
+  hint.classList.remove('show');
+  status.textContent = '';
+  status.className = 'status';
+  btn.disabled = true;
+  btn.textContent = '⟳ Checking...';
+
+  try {
+    const res = await fetch(`${API}/api/users/register`, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({name, password})
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      throw new Error(typeof data.detail === 'string' ? data.detail : 'Request failed');
+    }
+
+    state.name = data.name;
+    state.password = password;
+    state.user_id = data.user_id;
+    state.is_new = data.is_new;
+
+    status.textContent = data.is_new ? `Welcome, ${data.name}. Let us personalize your profile.` : `Welcome back, ${data.name}. Your account is ready.`;
+    status.className = 'status ok';
+
+    if (data.is_new) {
+      setTimeout(() => go(2), 350);
+    } else {
+      saveProfileLocally();
+      setTimeout(() => { window.location.href = 'map.html'; }, 450);
+    }
+  } catch (error) {
+    status.textContent = error.message;
+    status.className = 'status err';
+    btn.disabled = false;
+    btn.textContent = 'Continue →';
+    return;
+  }
+
+  btn.disabled = false;
+  btn.textContent = 'Continue →';
+}
+
+async function finishOnboarding() {
+  if (!state.user_id) {
+    document.getElementById('saveStatus').textContent = 'User account is missing. Please sign in again.';
+    document.getElementById('saveStatus').className = 'status err';
+    return;
+  }
+
+  const btn = document.getElementById('saveBtn');
+  btn.disabled = true;
+  btn.textContent = '⟳ Saving profile...';
+  document.getElementById('saveStatus').textContent = '';
+  document.getElementById('saveStatus').className = 'status';
+
+  try {
+    if (state.cuisines.size > 0 || state.places.size > 0) {
+      const res = await fetch(`${API}/api/users/${state.user_id}/preferences`, {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({
+          cuisines: [...state.cuisines],
+          place_cats: [...state.places],
+          radius: state.radius
+        })
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(typeof data.detail === 'string' ? data.detail : 'Could not save preferences');
+      }
+    }
+
+    saveProfileLocally();
+    document.getElementById('saveStatus').textContent = 'Profile saved. Opening the map...';
+    document.getElementById('saveStatus').className = 'status ok';
+    setTimeout(() => { window.location.href = 'map.html'; }, 450);
+  } catch (error) {
+    document.getElementById('saveStatus').textContent = error.message;
+    document.getElementById('saveStatus').className = 'status err';
+    btn.disabled = false;
+    btn.textContent = 'Save And Open Map →';
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  buildGrid('cuisineGrid', CUISINES, 'cuisines', 'sel');
+  buildGrid('placeGrid', PLACES, 'places', 'sel-teal');
+  updateRadius(1000);
+  document.getElementById('passwordInput').addEventListener('keydown', e => { if (e.key === 'Enter') submitAuth(); });
+  document.getElementById('nameInput').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('passwordInput').focus(); });
+});
+</script>
+</body>
+</html>

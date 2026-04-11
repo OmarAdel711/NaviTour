@@ -1,0 +1,27 @@
+# Large datasets / binaries
+data/*.pkl
+data/expanded_stop_times_*.txt
+cairo_assistant/nilechat_cairo_final_v1.zip
+cairo_assistant/nilechat_cairo_final_v1/*.safetensors
+cairo_assistant/nilechat_cairo_final_v1/checkpoint-*/optimizer.pt
+
+# Python
+__pycache__/
+*.pyc
+
+# Virtual environments
+venv/
+.env/
+
+# Spyder
+.spyproject/
+
+# Model training
+checkpoints/
+logs/
+*.pt
+*.bin
+*.safetensors
+
+# Data 
+*.pkl

@@ -1,0 +1,54 @@
+table_name,field_name,language,field_value,translation
+stops,stop_name,ar,Ain Helwan,عين حلوان
+stops,stop_name,ar,Ain Shams,عين شمس
+stops,stop_name,ar,Al-Sayeda Zeinab,السيدة زينب
+stops,stop_name,ar,Al-Shohadaa,الشهداء
+stops,stop_name,ar,Attaba,العتبة
+stops,stop_name,ar,Bohooth,البحوث
+stops,stop_name,ar,Cairo University,جامعة القاهرة
+stops,stop_name,ar,Dar El-Salam,دار السلام
+stops,stop_name,ar,Dokki,الدقي
+stops,stop_name,ar,El-Demerdash,الدمرداش
+stops,stop_name,ar,El-Giza,الجيزة
+stops,stop_name,ar,El-Maasara,المعصرة
+stops,stop_name,ar,El-Malek El-Saleh,الملك الصالح
+stops,stop_name,ar,El-Marg,المرج
+stops,stop_name,ar,El-Matareyya,المطرية
+stops,stop_name,ar,El-Mounib,المنيب
+stops,stop_name,ar,El-Zahraa,الزهراء
+stops,stop_name,ar,Ezbet El-Nakhl,عزبة النخل
+stops,stop_name,ar,Faisal,فيصل
+stops,stop_name,ar,Ghamra,غمرة
+stops,stop_name,ar,Hadayek El-Maadi,حدائق المعادي
+stops,stop_name,ar,Hadayek Helwan,حدائق حلوان
+stops,stop_name,ar,Hadayeq El-Zaitoun,حدائق الزيتون
+stops,stop_name,ar,Hammamat El-Qobba,حمامات القبة
+stops,stop_name,ar,Helmeyet El-Zaitoun,حلمية الزيتون
+stops,stop_name,ar,Helwan,حلوان
+stops,stop_name,ar,Helwan University,جامعة حلوان
+stops,stop_name,ar,Khalafawy,الخلفاوي
+stops,stop_name,ar,Kobri El-Qobba,كوبري القبة
+stops,stop_name,ar,Kolleyyet El-Zeraa,كلية الزراعة
+stops,stop_name,ar,Kozzika,كوزيكا
+stops,stop_name,ar,Maadi,المعادي
+stops,stop_name,ar,Manshiet El-Sadr,منشية الصدر
+stops,stop_name,ar,Mar Girgis,مار جرجس
+stops,stop_name,ar,Masarra,المسرة
+stops,stop_name,ar,Mezallat,المزلات
+stops,stop_name,ar,Mohamed Naguib,محمد نجيب
+stops,stop_name,ar,Nasser,ناصر
+stops,stop_name,ar,New El-Marg,المرج الجديدة
+stops,stop_name,ar,Omm El-Misryeen,أم المصريين
+stops,stop_name,ar,Opera,أوبرا
+stops,stop_name,ar,Orabi,عرابي
+stops,stop_name,ar,Rod El Farag,روض الفرج
+stops,stop_name,ar,Saad Zaghloul,سعد زغلول
+stops,stop_name,ar,Sadat,السادات
+stops,stop_name,ar,Sakanat El-Maadi,سكانات المعادي
+stops,stop_name,ar,Sakiat Mekki,ساقية مكي
+stops,stop_name,ar,Saray El-Qobba,سراي القبة
+stops,stop_name,ar,Shubra El-Kheima,شبرا الخيمة
+stops,stop_name,ar,St. Teresa,سانت تيريزا
+stops,stop_name,ar,Tora El-Asmant,طرة الأسمنت
+stops,stop_name,ar,Tora El-Balad,طرة البلد
+stops,stop_name,ar,Wadi Hof,وادي حوف

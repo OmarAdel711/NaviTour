@@ -37,7 +37,18 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import create_engine, text
 import pickle
 
-from dialogue_manager import DialogueManager, get_live_location as get_legacy_live_location
+# Team handoff:
+# `DialogueManager` is still owned by the routing/chat flow.
+# If the dialogue layer is replaced or removed later, update this import and
+# the chat-specific sections marked below. The live-location helpers are now
+# separated in `live_location.py` and can stay reusable across the project.
+from dialogue_manager import DialogueManager
+from live_location import (
+    fetch_live_location,
+    get_tracked_live_location,
+    normalize_session_id,
+    update_tracked_live_location,
+)
 
 # =========================
 # Database
@@ -68,11 +79,8 @@ def _candidate_database_urls():
 engine = None
 DATABASE_URL = None
 _dialogue_sessions = {}
-_chat_locations = {}
 _route_stop_lookup = None
 _route_stop_name_func = None
-DEFAULT_CHAT_SESSION = "default"
-CHAT_LOCATION_MAX_AGE_SECONDS = int(os.getenv("NAVITOUR_CHAT_LOCATION_MAX_AGE_SECONDS", "180"))
 
 
 class ChatMessageIn(BaseModel):
@@ -90,29 +98,17 @@ class LiveLocationIn(BaseModel):
     accuracy: Optional[float] = None
     session_id: Optional[str] = None
 
-
-def _normalize_session_id(session_id: Optional[str]) -> str:
-    cleaned = (session_id or "").strip()
-    return cleaned or DEFAULT_CHAT_SESSION
-
-
-def _get_live_location_for_session(session_id: str):
-    info = _chat_locations.get(session_id)
-    if not info:
-        return None
-
-    if time.time() - info["updated_at"] > CHAT_LOCATION_MAX_AGE_SECONDS:
-        return None
-
-    return info["lat"], info["lon"]
-
-
 def _get_dialogue_manager(session_id: Optional[str]):
-    sid = _normalize_session_id(session_id)
+    # Team handoff:
+    # This helper is only for chat/dialogue sessions. It wires the current
+    # dialogue implementation to the shared live-location provider.
+    # If another teammate builds a new dialogue module, this is the main place
+    # they can swap the manager implementation while keeping live location.
+    sid = normalize_session_id(session_id)
     manager = _dialogue_sessions.get(sid)
     if manager is None:
         manager = DialogueManager(
-            live_location_provider=lambda sid=sid: _get_live_location_for_session(sid) or get_legacy_live_location()
+            live_location_provider=lambda sid=sid: get_tracked_live_location(sid) or fetch_live_location()
         )
         _dialogue_sessions[sid] = manager
     return manager, sid
@@ -718,6 +714,10 @@ app.include_router(rec_router)
 
 @app.post("/message", tags=["chat"])
 def chat_message(payload: ChatMessageIn):
+    # Team handoff:
+    # This endpoint is chat/routing-specific because it depends on
+    # `DialogueManager` and route serialization. If the dialogue system is
+    # rebuilt, this endpoint should be edited or replaced by the chat team.
     manager, session_id = _get_dialogue_manager(payload.session_id)
     reply = manager.process(payload.message)
     route_payload = None
@@ -732,7 +732,7 @@ def chat_message(payload: ChatMessageIn):
             route_options=manager.last_route_options,
         )
 
-    live_location = _get_live_location_for_session(session_id)
+    live_location = get_tracked_live_location(session_id)
     return {
         "reply": reply,
         "session_id": session_id,
@@ -747,6 +747,9 @@ def chat_message(payload: ChatMessageIn):
 
 @app.post("/reset", tags=["chat"])
 def chat_reset(payload: Optional[ChatResetIn] = Body(default=None)):
+    # Team handoff:
+    # This reset endpoint is tied to the current dialogue session state.
+    # Keep or replace it only if the new chat implementation still needs it.
     requested_session_id = payload.session_id if payload else None
     manager, session_id = _get_dialogue_manager(requested_session_id)
     manager.reset_conversation()
@@ -755,13 +758,15 @@ def chat_reset(payload: Optional[ChatResetIn] = Body(default=None)):
 
 @app.post("/api/location", tags=["chat"])
 def update_live_location(payload: LiveLocationIn):
-    session_id = _normalize_session_id(payload.session_id)
-    _chat_locations[session_id] = {
-        "lat": float(payload.lat),
-        "lon": float(payload.lon),
-        "accuracy": float(payload.accuracy) if payload.accuracy is not None else None,
-        "updated_at": time.time(),
-    }
+    # Shared API:
+    # This endpoint belongs to the reusable live-location/tracking layer.
+    # Other teams can keep using it even if the dialogue/routing code changes.
+    session_id = update_tracked_live_location(
+        payload.session_id,
+        payload.lat,
+        payload.lon,
+        payload.accuracy,
+    )
     return {"status": "ok", "session_id": session_id}
 
 

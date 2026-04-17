@@ -517,6 +517,46 @@ input[type=range]{width:100%;accent-color:var(--accent);cursor:pointer;}
 
 <script>
 const API = 'http://localhost:8000';
+const LIVE_LOCATION_SESSION_KEY = 'navitour_chat_session_id';
+
+
+function ensureLiveLocationSessionId() {
+  let sessionId = sessionStorage.getItem(LIVE_LOCATION_SESSION_KEY);
+  if (!sessionId) {
+    sessionId = window.crypto && window.crypto.randomUUID
+      ? window.crypto.randomUUID()
+      : 'session-' + Math.random().toString(36).slice(2);
+    sessionStorage.setItem(LIVE_LOCATION_SESSION_KEY, sessionId);
+  }
+  return sessionId;
+}
+
+
+async function syncTrackedLocation(lat, lon, accuracy) {
+  try {
+    await fetch(`${API}/api/location`, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        session_id: ensureLiveLocationSessionId(),
+        lat,
+        lon,
+        accuracy
+      })
+    });
+  } catch (_) {}
+}
+
+
+async function clearTrackedLocation() {
+  try {
+    await fetch(`${API}/api/location/clear`, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({session_id: ensureLiveLocationSessionId()})
+    });
+  } catch (_) {}
+}
 
 // ════════════════════════════════════════════════════════
 // STATE
@@ -1048,6 +1088,7 @@ function stopGPS() {
   if (userMarker)  { map.removeLayer(userMarker);  userMarker  = null; }
   if (userCircle)  { map.removeLayer(userCircle);  userCircle  = null; }
   if (searchCircle){ map.removeLayer(searchCircle);searchCircle= null; }
+  clearTrackedLocation();
   const btn = document.getElementById('locBtn');
   btn.innerHTML = '📍 Use My Location'; btn.className = 'loc-btn';
   selected = null; renderList(); clearResults();
@@ -1055,6 +1096,7 @@ function stopGPS() {
 }
 
 async function updateGPS(lat, lon, acc) {
+  await syncTrackedLocation(lat, lon, acc);
   if (userMarker) { userMarker.setLatLng([lat, lon]); }
   else {
     userMarker = L.marker([lat,lon],{icon:userIcon,zIndexOffset:1000}).addTo(map)

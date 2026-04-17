@@ -30,7 +30,7 @@ def fetch_live_location():
         return None
 
 
-def get_tracked_live_location(session_id):
+def get_tracked_location_record(session_id):
     info = _tracked_locations.get(normalize_session_id(session_id))
     if not info:
         return None
@@ -38,7 +38,40 @@ def get_tracked_live_location(session_id):
     if time.time() - info["updated_at"] > LOCATION_MAX_AGE_SECONDS:
         return None
 
+    return info
+
+
+def get_tracked_live_location(session_id):
+    info = get_tracked_location_record(session_id)
+    if not info:
+        return None
     return info["lat"], info["lon"]
+
+
+def get_effective_live_location(session_id=None, allow_fallback=True):
+    tracked = get_tracked_live_location(session_id)
+    if tracked is not None:
+        return tracked
+
+    if allow_fallback:
+        return fetch_live_location()
+
+    return None
+
+
+def get_live_location_payload(session_id=None, allow_fallback=False):
+    location = get_effective_live_location(session_id, allow_fallback=allow_fallback)
+    if location is None:
+        return None
+
+    lat, lon = location
+    info = get_tracked_location_record(session_id)
+    return {
+        "lat": lat,
+        "lon": lon,
+        "accuracy": info["accuracy"] if info else None,
+        "source": "tracked" if info else "fallback",
+    }
 
 
 def update_tracked_live_location(session_id, lat, lon, accuracy=None):

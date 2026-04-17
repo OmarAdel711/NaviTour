@@ -44,8 +44,8 @@ import pickle
 # separated in `live_location.py` and can stay reusable across the project.
 from dialogue_manager import DialogueManager
 from live_location import (
-    fetch_live_location,
-    get_tracked_live_location,
+    clear_tracked_live_location,
+    get_live_location_payload,
     normalize_session_id,
     update_tracked_live_location,
 )
@@ -98,18 +98,20 @@ class LiveLocationIn(BaseModel):
     accuracy: Optional[float] = None
     session_id: Optional[str] = None
 
+
+class LiveLocationClearIn(BaseModel):
+    session_id: Optional[str] = None
+
 def _get_dialogue_manager(session_id: Optional[str]):
     # Team handoff:
-    # This helper is only for chat/dialogue sessions. It wires the current
-    # dialogue implementation to the shared live-location provider.
+    # This helper is only for chat/dialogue sessions.
     # If another teammate builds a new dialogue module, this is the main place
-    # they can swap the manager implementation while keeping live location.
+    # they can swap the manager implementation without touching the shared
+    # live-location module.
     sid = normalize_session_id(session_id)
     manager = _dialogue_sessions.get(sid)
     if manager is None:
-        manager = DialogueManager(
-            live_location_provider=lambda sid=sid: get_tracked_live_location(sid) or fetch_live_location()
-        )
+        manager = DialogueManager()
         _dialogue_sessions[sid] = manager
     return manager, sid
 
@@ -728,20 +730,17 @@ def chat_message(payload: ChatMessageIn):
             start_name=(manager.last_route_context or {}).get("start_name"),
             destination_name=(manager.last_route_context or {}).get("destination_name"),
             departure_time=(manager.last_route_context or {}).get("departure_time"),
-            used_live_location=(manager.last_route_context or {}).get("used_live_location"),
+            used_live_location=False,
             route_options=manager.last_route_options,
         )
 
-    live_location = get_tracked_live_location(session_id)
+    live_location = get_live_location_payload(session_id, allow_fallback=False)
     return {
         "reply": reply,
         "session_id": session_id,
         "has_route": bool(manager.last_legs),
         "route": route_payload,
-        "live_location": (
-            {"lat": live_location[0], "lon": live_location[1]}
-            if live_location else None
-        ),
+        "live_location": live_location,
     }
 
 
@@ -753,6 +752,7 @@ def chat_reset(payload: Optional[ChatResetIn] = Body(default=None)):
     requested_session_id = payload.session_id if payload else None
     manager, session_id = _get_dialogue_manager(requested_session_id)
     manager.reset_conversation()
+    clear_tracked_live_location(session_id)
     return {"status": "ok", "session_id": session_id}
 
 
@@ -767,6 +767,13 @@ def update_live_location(payload: LiveLocationIn):
         payload.lon,
         payload.accuracy,
     )
+    return {"status": "ok", "session_id": session_id}
+
+
+@app.post("/api/location/clear", tags=["chat"])
+def clear_live_location(payload: Optional[LiveLocationClearIn] = Body(default=None)):
+    session_id = normalize_session_id(payload.session_id if payload else None)
+    clear_tracked_live_location(session_id)
     return {"status": "ok", "session_id": session_id}
 
 

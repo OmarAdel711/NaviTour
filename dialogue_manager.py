@@ -1,7 +1,7 @@
 # dialogue_manager.py
-# الدمج الكامل: المودل يفهم الكلام + GPS حقيقي + RAPTOR
+# إدارة الحوار الخاصة بالملاحة فقط
 
-import os, sys, requests, pickle, re, json
+import os, sys, pickle, re, json
 from datetime import datetime
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -10,21 +10,11 @@ if BASE_DIR not in sys.path:
 
 from states import State
 from raptor.services.raptor_service import run_raptor_plan_from_assistant_json
-from raptor.services.geo_utils import find_nearest_stop, haversine
-from raptor.utils import format_legs
 from raptor.output_translation import load_translations
 
 
 NETWORK_PATH = os.path.join(BASE_DIR, "data", "network.pkl")
 TRANSLATIONS_PATH = os.path.join(BASE_DIR, "data", "translations.txt")
-LOCATION_SERVICE_URL = os.getenv(
-    "NAVITOUR_LOCATION_SERVICE_URL",
-    "http://127.0.0.1:5000/get_location"
-)
-
-
-CAIRO_MIN_LAT, CAIRO_MAX_LAT = 29.8, 30.3
-CAIRO_MIN_LON, CAIRO_MAX_LON = 31.0, 31.6
 
 AGENCY_LABELS = {
     "Metro": "مترو الأنفاق",
@@ -170,60 +160,6 @@ def _llm_answer_general(user_message):
         pass
 
     return None
-
-
-# ─────────────────────────────────────────
-# GPS
-# ─────────────────────────────────────────
-
-def get_live_location():
-
-    try:
-
-        res = requests.get(LOCATION_SERVICE_URL, timeout=3)
-
-        data = res.json()
-
-        if data["lat"] is None:
-            return None
-
-        return float(data["lat"]), float(data["lon"])
-
-    except Exception:
-        return None
-
-
-def _nearest_stop_info(user_lat, user_lon):
-
-    network = get_network()
-
-    stop_id = find_nearest_stop(network, (user_lat, user_lon), max_distance_km=5.0)
-
-    if stop_id is None:
-        return None
-
-    stop_row = network.stops[network.stops['stop_id'] == stop_id].iloc[0]
-
-    dist_m = round(
-        haversine(
-            user_lat,
-            user_lon,
-            stop_row['stop_lat'],
-            stop_row['stop_lon']
-        ) * 1000
-    )
-
-    stop_name_func = load_translations(TRANSLATIONS_PATH, network)
-
-    arabic_name = stop_name_func(stop_id)
-
-    link = (
-        f"https://www.openstreetmap.org/directions"
-        f"?engine=fossgis_osrm_foot"
-        f"&route={user_lat},{user_lon};{stop_row['stop_lat']},{stop_row['stop_lon']}"
-    )
-
-    return arabic_name, dist_m, link
 
 
 # ─────────────────────────────────────────
@@ -479,7 +415,7 @@ def _is_navigation_request(message):
 
 class DialogueManager:
 
-    def __init__(self, live_location_provider=None):
+    def __init__(self):
 
         self.state = State.IDLE
         self.start_location = None
@@ -489,8 +425,6 @@ class DialogueManager:
         self.last_route_summary = None
         self.last_route_options = None
         self.last_route_context = None
-        self.live_location_provider = live_location_provider
-        self.used_live_location = False
 
     def reset_conversation(self):
 
@@ -502,47 +436,16 @@ class DialogueManager:
         self.last_route_summary = None
         self.last_route_options = None
         self.last_route_context = None
-        self.used_live_location = False
 
     def _greeting_text(self):
 
         return (
             "أهلاً بيك في NaviTour 👋\n"
-            "اكتب لي المكان اللي عايز تروحه، ولو الـ GPS شغال أقدر أبدأ من موقعك الحالي تلقائياً.\n"
+            "اكتب لي المكان اللي عايز تروحه.\n"
             "مثال: عايز أروح رمسيس من العباسية."
         )
 
-    def _nearest_stop_from_live_location(self):
-
-        try:
-            location = self.live_location_provider() if self.live_location_provider else get_live_location()
-        except Exception:
-            location = None
-        if location is None:
-            return None, "⚠️ مش قادر أحدد موقعك الحالي. فعّل الـ GPS أو اكتب نقطة البداية."
-
-        user_lat, user_lon = location
-
-        inside_cairo = (
-            CAIRO_MIN_LAT <= user_lat <= CAIRO_MAX_LAT and
-            CAIRO_MIN_LON <= user_lon <= CAIRO_MAX_LON
-        )
-
-        if not inside_cairo:
-            return None, "📍 يبدو أنك خارج نطاق القاهرة حالياً، اكتب نقطة البداية يدويًّا."
-
-        stop_info = _nearest_stop_info(user_lat, user_lon)
-        if stop_info is None:
-            return None, "⚠️ لم أجد محطة قريبة من موقعك الحالي."
-
-        arabic_name, dist_m, link = stop_info
-        return {
-            "name": arabic_name,
-            "distance_m": dist_m,
-            "map_link": link,
-        }, None
-
-    def _build_route_reply(self, start_name, destination_name, departure_time_raw, include_live_location_summary=False):
+    def _build_route_reply(self, start_name, destination_name, departure_time_raw):
 
         departure_time = _parse_time(departure_time_raw)
         assistant_json = {
@@ -559,7 +462,6 @@ class DialogueManager:
             "start_name": start_name,
             "destination_name": destination_name,
             "departure_time": departure_time,
-            "used_live_location": include_live_location_summary,
         }
 
         if route_plan is None:
@@ -587,19 +489,7 @@ class DialogueManager:
         if self.last_route_options and len(self.last_route_options) > 1:
             route += f"\n\n🗺️ على الخريطة هتلاقي {len(self.last_route_options)} اختيارات للمسار، والاختيار المقترح ظاهر أولاً."
 
-        if not include_live_location_summary:
-            return route
-
-        nearest_stop, location_error = self._nearest_stop_from_live_location()
-        if nearest_stop is None:
-            return route + ("\n\n" + location_error if location_error else "")
-
-        return (
-            route +
-            f"\n\n📍 أقرب محطة ليك: {nearest_stop['name']}\n"
-            f"🚶 المسافة: {nearest_stop['distance_m']} متر تقريبًا\n\n"
-            f"🗺️ افتح الخريطة:\n{nearest_stop['map_link']}"
-        )
+        return route
 
     def _complete_route(self):
 
@@ -607,14 +497,12 @@ class DialogueManager:
             self.start_location,
             self.destination,
             self.time or "دلوقتي",
-            include_live_location_summary=self.used_live_location
         )
 
         self.state = State.IDLE
         self.start_location = None
         self.destination = None
         self.time = None
-        self.used_live_location = False
 
         return reply
 
@@ -648,7 +536,7 @@ class DialogueManager:
             if self.state == State.AWAITING_DESTINATION:
                 return "تحب تروح فين؟"
             if self.state == State.AWAITING_START:
-                return "اكتب نقطة البداية، أو فعّل الـ GPS وأنا أحدد أقرب محطة ليك."
+                return "اكتب نقطة البداية."
             if self.state == State.AWAITING_TIME:
                 return "هتتحرك امتى؟ اكتب دلوقتي أو وقت مثل 08:30."
             return self._greeting_text()
@@ -660,18 +548,9 @@ class DialogueManager:
 
         if self.state == State.AWAITING_DESTINATION:
             self.destination = message
-            nearest_stop, location_error = self._nearest_stop_from_live_location()
-            if nearest_stop is not None:
-                self.start_location = nearest_stop["name"]
-                self.time = "دلوقتي"
-                self.used_live_location = True
-                return self._complete_route()
-
             self.state = State.AWAITING_START
-            self.used_live_location = False
             return (
                 f"تمام، هنروح {self.destination}.\n"
-                f"{location_error}\n"
                 "اكتب نقطة البداية."
             )
 
@@ -679,7 +558,6 @@ class DialogueManager:
             time_hint = _extract_time_hint(message)
             cleaned_start = re.sub(r"\b\d{1,2}:\d{2}\b", "", message).replace("دلوقتي", "").strip(" ؟?.,،")
             self.start_location = cleaned_start or message
-            self.used_live_location = False
             if time_hint:
                 self.time = time_hint
                 return self._complete_route()
@@ -706,21 +584,12 @@ class DialogueManager:
             self.time = _extract_time_hint(message) or "دلوقتي"
 
             if self.start_location and self.destination:
-                self.used_live_location = False
                 return self._complete_route()
 
             if self.destination:
-                nearest_stop, location_error = self._nearest_stop_from_live_location()
-                if nearest_stop is not None:
-                    self.start_location = nearest_stop["name"]
-                    self.used_live_location = True
-                    return self._complete_route()
-
                 self.state = State.AWAITING_START
-                self.used_live_location = False
                 return (
                     f"تمام، هنروح {self.destination}.\n"
-                    f"{location_error}\n"
                     "اكتب نقطة البداية، مثلاً: العباسية."
                 )
 

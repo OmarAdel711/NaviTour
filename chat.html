@@ -562,6 +562,16 @@ function updateSessionId(sessionId) {
   if (sessionId) sessionStorage.setItem(CHAT_SESSION_KEY, sessionId);
 }
 
+async function clearTrackedLiveLocation() {
+  try {
+    await fetch(`${API}/api/location/clear`, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({session_id: ensureSessionId()})
+    });
+  } catch (_) {}
+}
+
 function setPill(el, text, mode = 'default') {
   el.className = 'pill' + (mode === 'live' ? ' live' : mode === 'route' ? ' route' : mode === 'offline' ? ' offline' : '');
   el.innerHTML = text;
@@ -699,6 +709,8 @@ async function syncLiveLocation(showSuccess = false) {
     });
 
     if (!response.ok) throw new Error('Location sync failed');
+    const data = await response.json();
+    updateSessionId(data.session_id);
 
     const accuracy = Math.round(position.coords.accuracy || 0);
     setPill(
@@ -708,6 +720,7 @@ async function syncLiveLocation(showSuccess = false) {
     );
     return payload;
   } catch (_) {
+    await clearTrackedLiveLocation();
     setPill(gpsPill, '📍 <strong>الموقع غير متاح حالياً</strong>', 'offline');
     return null;
   }
